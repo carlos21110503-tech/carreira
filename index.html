@@ -63,7 +63,7 @@ pre{white-space:pre-wrap;font-size:12px;color:var(--mut);background:var(--bt);pa
 <div id="toast"></div>
 <div id="cfg"><div class="box">
 <h2>Configurar</h2><p>Faça os 3 passos uma vez. Tudo fica salvo só neste iPhone.</p>
-<div class="step"><h4><em>1</em> Chave do Google <span id="s1"></span></h4><p>Gratuita em aistudio.google.com/apikey</p><input class="f" id="key" type="password" placeholder="AIza…"></div>
+<div class="step"><h4><em>1</em> Chave do Google <span id="s1"></span></h4><p>Gratuita em aistudio.google.com/apikey</p><input class="f" id="key" type="password" placeholder="Cole a chave aqui"></div>
 <div class="step"><h4><em>2</em> Prompt Mestre <span id="s2"></span></h4><p>Abra o arquivo .md, copie tudo e cole aqui.</p><textarea class="f" id="pm" placeholder="Cole o Prompt Mestre"></textarea></div>
 <div class="step"><h4><em>3</em> Modelo <span id="s3"></span></h4><select class="f" id="mdl"></select><button class="btn" onclick="models()">Buscar modelos disponíveis</button>
 <label class="sw"><input id="web" type="checkbox"> Pesquisar na web (Google Search)</label></div>
@@ -75,13 +75,13 @@ pre{white-space:pre-wrap;font-size:12px;color:var(--mut);background:var(--bt);pa
 const API='https://generativelanguage.googleapis.com/v1beta';
 const EXTRA=`
 INSTRUÇÕES DO APP (obrigatórias):
-- Formato da cena: a primeira linha deve ser o cabeçalho em negrito com data, horário e local, assim: **Quinta-feira, 03/12/2026, 9h13 · Campo 2 do CT Meninos da Vila**. Depois a narração em parágrafos curtos.
+- Formato da cena: a primeira linha deve ser o cabeçalho em negrito com data, horário e local, assim: **Quinta-feira, 05/11/2026, 8h30 · Portaria do CT Meninos da Vila**. Depois a narração em parágrafos curtos.
 - Termine com a linha **O que o Carlos faz?** e a lista numerada de 3 a 5 opções (a última "Outra coisa (escreva)"), cada opção em uma linha começando por "1. ".
 - Quando a busca na web estiver disponível, use-a para confirmar dados reais (jogadores, idades, comissão, estádios, CT, valores). Se não achar, diga que não encontrou e não invente.
 - Depois das opções, termine SEMPRE com <estado_atualizado>{JSON COMPLETO}</estado_atualizado> com o estado inteiro da carreira: data_hora, local, saldo (número), atributos, estatisticas_oficiais, estatisticas_treino, relacoes, pendencias, fatos_confirmados (lista curta e cumulativa). O jogador não vê esse bloco.`;
-const K='carreira_gemini_v2';
-const FRESH=()=>({data_hora:'03/12/2026 09:13',local:'Campo 2, CT Meninos da Vila',saldo:9500});
-let D=null;try{D=JSON.parse(localStorage.getItem(K)||localStorage.getItem('carreira_gemini_v1')||'null');}catch(e){}
+const K='carreira_gemini_v3';
+const FRESH=()=>({data_hora:'05/11/2026 08:30',local:'Portaria do CT Meninos da Vila',saldo:500});
+let D=null;try{D=JSON.parse(localStorage.getItem(K)||'null');}catch(e){}
 D=D||{estado:FRESH(),hist:[],key:'',model:'',pm:'',web:true};
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(D));}catch(e){}};
 const $=id=>document.getElementById(id);
@@ -114,7 +114,7 @@ function chips(){
 }
 function render(){
  chips();const c=$('chat');c.innerHTML='';
- if(!D.hist.length){c.innerHTML='<div class="hero"><b>Carreira de Carlos Henrique</b>Santos Sub-20 · 03/12/2026<br>Você decide cada detalhe. Eu narro cena por cena.</div>';
+ if(!D.hist.length){c.innerHTML='<div class="hero"><b>Carreira de Carlos Henrique</b>Santos Sub-20 · 05/11/2026<br>Você decide cada detalhe. Eu narro cena por cena.</div>';
   const b=document.createElement('button');b.className='start';b.textContent='▶ Começar a carreira';b.onclick=()=>go('');c.appendChild(b);return;}
  D.hist.forEach((m,i)=>{
   if(i===0&&m.role==='user')return;
@@ -160,7 +160,7 @@ async function go(text,keepLast){
  busy=true;sel.clear();
  const first=!D.hist.length;
  const prev=JSON.parse(JSON.stringify(D.estado));
- D.hist.push({role:'user',content:first?'Comece pela seção 18 do prompt, retomando do ponto da seção 17.':text});
+ D.hist.push({role:'user',content:first?'Comece a carreira agora, seguindo as seções 16 e 17 do prompt.':text});
  render();const ty=typing();
  const recent=D.hist.slice(-13);while(recent.length&&recent[0].role!=='user')recent.shift();
  const body={systemInstruction:{parts:[{text:D.pm+EXTRA+'\n\nESTADO ATUAL:\n'+JSON.stringify(D.estado)}]},
@@ -213,7 +213,7 @@ async function saveCfg(){
 }
 function bk(){const s=JSON.stringify({...D,key:'',pm:''});(navigator.clipboard?navigator.clipboard.writeText(s):Promise.reject()).then(()=>toast('Backup copiado. Cole em Notas.')).catch(()=>prompt('Copie:',s));}
 function rs(){const s=prompt('Cole o backup:');if(s){try{const o=JSON.parse(s);o.key=D.key;o.pm=D.pm;o.model=D.model;D=o;save();cfg(0);render();toast('Backup restaurado.');}catch(e){toast('Backup inválido.');}}}
-function rst(){if(confirm('Apagar toda a carreira e voltar a 03/12 às 9h13?')){D.estado=FRESH();D.hist=[];save();cfg(0);render();}}
+function rst(){if(confirm('Apagar toda a carreira e recomeçar em 05/11 às 8h30?')){D.estado=FRESH();D.hist=[];save();cfg(0);render();}}
 const ta=$('t');ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,120)+'px';});
 $('f').onsubmit=e=>{e.preventDefault();const v=ta.value.trim();if(v){ta.value='';ta.style.height='auto';go(v);}};
 ['key','pm'].forEach(i=>$(i).addEventListener('input',status));$('mdl').addEventListener('change',status);
